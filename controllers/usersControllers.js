@@ -78,6 +78,7 @@ export const uploadAvatar = async (req, res, next) => {
     if (!req.file) {
       throw HttpError(400, "Select a file to upload");
     }
+
     await resizeImage(req.file.path, 250, 250);
     fs.rename(
       req.file.path,
