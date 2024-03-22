@@ -1,6 +1,9 @@
-import { STATUS_CODES } from "http";
+import fs from "fs/promises";
+import path from "path";
 import HttpError from "../helpers/HttpError.js";
 import * as usersServices from "../services/userServices.js";
+import gravatar from "gravatar";
+import { resizeImage } from "../services/imageServices.js";
 
 export const createUser = async (req, res, next) => {
   const { email } = req.body;
@@ -10,9 +13,11 @@ export const createUser = async (req, res, next) => {
     if (user) {
       throw HttpError(409, "Email in use");
     }
+    const avatarURL = gravatar.url(normalizeEmail);
     const newUser = await usersServices.createUser({
       ...req.body,
       email: normalizeEmail,
+      avatarURL,
     });
     res.status(201).send({
       user: {
@@ -63,6 +68,25 @@ export const getCurrentUser = async (req, res, next) => {
   try {
     const user = await usersServices.findUserById(req.user.id);
     res.send({ email: user.email, subscription: user.subscription });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw HttpError(400, "Select a file to upload");
+    }
+    await resizeImage(req.file.path, 250, 250);
+    fs.rename(
+      req.file.path,
+      path.join(process.cwd(), "public", "avatars", req.file.filename)
+    );
+    const avatarURL = path.join("avatars", req.file.filename);
+
+    await usersServices.updateUser(req.user.id, { avatarURL });
+    res.send({ avatarURL });
   } catch (error) {
     next(error);
   }

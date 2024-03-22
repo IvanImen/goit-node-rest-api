@@ -12,9 +12,9 @@ export async function findUserById(id) {
   return user;
 }
 
-export async function createUser({ email, password }) {
+export async function createUser({ email, password, avatarURL }) {
   const hashedPassword = await bcryptjs.hash(password, 10);
-  const newUser = new User({ email, password: hashedPassword });
+  const newUser = new User({ email, password: hashedPassword, avatarURL });
   const user = await newUser.save();
   return user;
 }
@@ -39,4 +39,9 @@ export async function logInUser(id) {
 
 export async function logOutUser(id) {
   await User.findByIdAndUpdate(id, { token: null });
+}
+
+export async function updateUser(id, payload) {
+  const user = await User.findByIdAndUpdate(id, payload, { new: true });
+  return user;
 }
