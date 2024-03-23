@@ -18,6 +18,9 @@ export const authMiddleware = async (req, res, next) => {
     if (!user || !user.token || token !== user.token) {
       throw HttpError(401, "Not authorized");
     }
+    if (!user.verify) {
+      throw HttpError(401, "Your email isn't verified");
+    }
     req.user = user;
     next();
   } catch (error) {

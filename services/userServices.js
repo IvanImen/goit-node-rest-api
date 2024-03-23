@@ -2,8 +2,8 @@ import { User } from "../db/models/User.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-export async function findUserByEmail(email) {
-  const user = await User.findOne({ email });
+export async function findUser(data) {
+  const user = await User.findOne(data);
   return user;
 }
 
@@ -12,9 +12,19 @@ export async function findUserById(id) {
   return user;
 }
 
-export async function createUser({ email, password, avatarURL }) {
+export async function createUser({
+  email,
+  password,
+  avatarURL,
+  verificationToken,
+}) {
   const hashedPassword = await bcryptjs.hash(password, 10);
-  const newUser = new User({ email, password: hashedPassword, avatarURL });
+  const newUser = new User({
+    email,
+    password: hashedPassword,
+    avatarURL,
+    verificationToken,
+  });
   const user = await newUser.save();
   return user;
 }
